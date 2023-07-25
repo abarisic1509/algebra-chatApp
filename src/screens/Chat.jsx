@@ -1,4 +1,83 @@
+import { useEffect, useState } from "react";
+import { getScaledroneChannelId } from "../utils/getEnv";
+
 const Chat = () => {
+	const [messages, setMessages] = useState([]);
+	const [newMessage, setNewMessage] = useState("");
+	const [drone, setDrone] = useState(null);
+	const channelId = getScaledroneChannelId();
+
+	useEffect(() => {
+		//initializing scaledrone
+		// eslint-disable-next-line no-undef
+		const scaledrone = new Scaledrone(channelId);
+		setDrone(scaledrone);
+
+		// if (drone) {
+		// 	//connect to the room
+		// 	drone.on("open", (error) => {
+		// 		if (error) {
+		// 			console.log("Error in connecting");
+		// 		} else {
+		// 			console.log("Connected succesfully");
+		// 		}
+		// 	});
+
+		// 	//subscribe to channel
+		// 	const room = drone.subscribe("test");
+
+		// 	//listen for incoming messages
+		// 	room.on("data", (data) => {
+		// 		console.log(data);
+		// 		const { message, sender } = data;
+		// 		setMessages((prev) => [...prev, `${sender}: ${message}`]);
+		// 	});
+		// 	return () => {
+		// 		drone.close();
+		// 	};
+		// }
+	}, []);
+
+	console.log(messages);
+
+	if (drone) {
+		//connect to the room
+		drone.on("open", (error) => {
+			if (error) {
+				console.log("Error in connecting");
+			} else {
+				console.log("Connected succesfully");
+			}
+		});
+
+		//subscribe to channel
+		const room = drone.subscribe("test");
+
+		//listen for incoming messages
+		room.on("data", (data) => {
+			console.log(data);
+			const { message, sender } = data;
+			setMessages((prev) => [...prev, `${sender}: ${message}`]);
+		});
+	}
+
+	const handleInputChange = (e) => {
+		console.log(e.target.value);
+		setNewMessage(e.target.value);
+	};
+
+	const handleSendMessage = (e) => {
+		e.preventDefault();
+		if (newMessage.trim() !== "") {
+			// Send the message to Scaledrone
+			drone.publish({
+				room: "test",
+				message: newMessage,
+			});
+			setNewMessage("");
+		}
+	};
+
 	return (
 		<div className="w-screen min-h-screen flex flex-col">
 			{/* Header */}
@@ -27,17 +106,20 @@ const Chat = () => {
 							quibusdam temporibus dicta in et nobis officiis eum recusandae ea.
 						</p>
 					</article>
+					{messages}
 				</section>
 			</main>
 			{/* Footer */}
 			<footer className="bg-blue-400 w-full mt-auto px-4 py-3">
-				<form className="flex gap-2">
-					<textarea
+				<form className="flex gap-2" onSubmit={handleSendMessage}>
+					<input
+						type="text"
 						name="message"
 						id="message"
-						rows="2"
+						value={newMessage}
+						onChange={handleInputChange}
 						className="w-full bg-neutral-50 border border-solid border-blue-300 rounded-2xl text-neutral-800 outline-blue-600 p-3"
-					></textarea>
+					/>
 
 					<button
 						type="submit"
