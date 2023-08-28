@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getScaledroneChannelId } from "../utils/getEnv";
 
-const Chat = ({ activeUser, setActiveUser }) => {
+const Chat = ({ activeUser }) => {
 	const [messages, setMessages] = useState([]);
 	const [newMessage, setNewMessage] = useState("");
 	const [drone, setDrone] = useState(null);
