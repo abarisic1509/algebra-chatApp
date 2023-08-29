@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Chat, Login, Lobby } from "./screens";
 import { Header } from "./components";
-import { wavesBlue, wavesGrey } from "./assets";
 
 function App() {
 	const navigate = useNavigate();
@@ -23,7 +22,7 @@ function App() {
 			{pathname !== "/" && (
 				<Header activeUser={activeUser} setActiveUser={setActiveUser} />
 			)}
-			<main className="bg-neutral-50 flex-auto relative z-10">
+			<main className="bg-neutral-50 flex flex-auto relative z-10">
 				<Routes>
 					<Route path="/" element={<Login setActiveUser={setActiveUser} />} />
 					<Route

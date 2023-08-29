@@ -55,7 +55,7 @@ const Login = ({ setActiveUser }) => {
 	};
 
 	return (
-		<div className=" bg-blue-600 min-h-screen flex justify-center p-5 pt-10 md:pt-20 md:p-10 xl:p-20 relative">
+		<div className=" bg-blue-600 min-h-screen w-full flex justify-center p-5 pt-10 md:pt-20 md:p-10 xl:p-20 relative">
 			{/* Content wrapper */}
 			<div className="flex flex-col gap-4 relative z-10 md:landscape:mr-auto lg:mr-auto">
 				<h1 className=" text-neutral-100 text-xl">
