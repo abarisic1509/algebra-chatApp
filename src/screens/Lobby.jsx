@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Container } from "../components";
 
 const Lobby = () => {
+	const rooms = ["test", "observable-test"];
 	return (
 		<div
 			className="w-full bg-orange-100 flex flex-col"
@@ -20,14 +21,16 @@ const Lobby = () => {
 					<h2>Choose a room to start chatting</h2>
 
 					<ul className="flex flex-col gap-2">
-						<li>
-							<Link
-								to="/chat/test"
-								className="py-3 px-6 bg-blue-200 rounded-sm hover:bg-blue-300 transition-all"
-							>
-								Test
-							</Link>
-						</li>
+						{rooms.map((room) => (
+							<li key={room} className="flex">
+								<Link
+									to={`/chat/${room}`}
+									className="py-3 px-6 bg-blue-200 rounded-sm hover:bg-blue-300 transition-all"
+								>
+									{room}
+								</Link>
+							</li>
+						))}
 					</ul>
 				</section>
 			</Container>

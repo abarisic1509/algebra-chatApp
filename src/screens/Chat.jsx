@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
-import { getScaledroneChannelId } from "../utils/getEnv";
+import {
+	getScaledroneChannelId,
+	getScaledroneChannelId2,
+} from "../utils/getEnv";
+import { Link, useParams } from "react-router-dom";
+import { Container } from "../components";
 
 const Chat = ({ activeUser }) => {
-	//const [members, setMembers] = useState([]);
+	const params = useParams();
+	const [activeMembers, setActiveMembers] = useState([]);
 	const [messages, setMessages] = useState([]);
 	const [newMessage, setNewMessage] = useState("");
 	const [drone, setDrone] = useState(null);
-	const channelId = getScaledroneChannelId();
+	const channelId =
+		params.id === "test" ? getScaledroneChannelId() : getScaledroneChannelId2();
 
 	useEffect(() => {
 		//initializing scaledrone
@@ -30,8 +37,7 @@ const Chat = ({ activeUser }) => {
 					console.log("Connected succesfully");
 				}
 				//subscribe to channel
-				const room = drone.subscribe("test", { historyCount: 5 });
-				console.log("room", room);
+				const room = drone.subscribe(params.id);
 
 				//listen for incoming messages
 				room.on("open", (error) => {
@@ -45,18 +51,26 @@ const Chat = ({ activeUser }) => {
 				// List of currently online members, emitted once
 				room.on("members", (members) => {
 					console.log("members", members);
-					// List of members as an array
+					const filteredMembers = members.map((memb) => {
+						if (activeMembers.some((m) => m.id === memb.id)) {
+							return;
+						}
+						return memb;
+					});
+					setActiveMembers(filteredMembers);
 				});
-				// User joined the room
-				// room.on("member_join", (member) => {
-				// 	setMembers((prev) => [...prev, member]);
-				// });
+				//User joined the room
+				room.on("member_join", (member) => {
+					setActiveMembers((prev) => [...prev, member]);
+				});
 
-				// User left the room
-				// room.on("member_leave", ({ id }) => {
-				// 	const filteredMembers = members.filter((member) => member.id === id);
-				// 	setMembers(filteredMembers);
-				// });
+				//User left the room
+				room.on("member_leave", ({ id }) => {
+					const filteredMembers = activeMembers.filter(
+						(member) => member.id !== id
+					);
+					setActiveMembers(filteredMembers);
+				});
 
 				room.on("history_message", (message) => {
 					if (messages.some((m) => m.id === message.id)) {
@@ -82,6 +96,17 @@ const Chat = ({ activeUser }) => {
 		return "#" + Math.floor(Math.random() * 0xffffff).toString(16);
 	}
 
+	function getUserColor(userId) {
+		const userData = activeMembers.find((memb) => memb.id === userId);
+
+		return userData.clientData.color;
+	}
+	function getUserName(userId) {
+		const userData = activeMembers.find((memb) => memb.id === userId);
+
+		return userData?.clientData?.name;
+	}
+
 	function generateTimestamp(timestamp) {
 		const formattedTimestamp = new Date(timestamp);
 
@@ -101,31 +126,60 @@ const Chat = ({ activeUser }) => {
 		if (newMessage.trim() !== "") {
 			// Send the message to Scaledrone
 			drone.publish({
-				room: "test",
+				room: params.id,
 				message: newMessage,
 			});
 			setNewMessage("");
 		}
 	};
 
-	console.log("messages", messages);
-	//console.log("drone", drone);
+	console.log("activeMembers", activeMembers);
+	console.log("drone", drone);
 
 	return (
 		<div
-			className="grid bg-orange-100 w-full"
-			style={{ gridTemplateRows: "1fr auto" }}
+			className="grid bg-orange-100 w-full relative"
+			style={{ gridTemplateRows: "auto 1fr auto" }}
 		>
+			{/* Topbar */}
+			<div className="flex bg-blue-300  py-2 px-4 md:px-10 fixed top-[3.5rem] shadow-lg left-0 w-full">
+				<Container className="flex items-center justify-between gap-4">
+					{/* Breadcrumbs */}
+					<div className="flex items-center gap-2">
+						<Link
+							to="/lobby"
+							className="text-xl font-medium text-orange-700 hover:opacity-60"
+						>
+							Lobby
+						</Link>
+						<span className="text-xl font-black">{`>`}</span>
+						<p className="text-xl font-medium"> {params.id}</p>
+					</div>
+
+					{/* Active users */}
+					{activeMembers.length > 0 && (
+						<p className="text-xl font-medium">
+							{activeMembers.length}{" "}
+							{activeMembers.length === 1 ? "user" : "users"} online
+						</p>
+					)}
+				</Container>
+			</div>
 			{/* Chat window */}
-			<section className="flex flex-col px-4 gap-2">
+			<section className="flex flex-col px-4 gap-2 pt-28 pb-14">
 				{messages.map((msg, i) => {
 					if (msg.clientId === drone.clientId) {
 						return (
 							<article
 								key={drone.clientId + i}
-								className="flex flex-col px-5 py-3 gap-2 shadow-lg items-end text-right bg-neutral-100 ml-auto max-w-[80%] rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl"
+								className="flex flex-col px-5 py-3 gap-2 shadow-lg items-end text-right bg-neutral-100 ml-auto min-w-[150px] max-w-[40rem] rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl"
 							>
-								<h3 className="text-lg font-semibold">Username</h3>
+								<h3
+									className="text-lg font-semibold"
+									style={{ color: getUserColor(msg.clientId) }}
+								>
+									{getUserName(msg.clientId)}
+								</h3>
 								<p>{msg.data}</p>
 								<p className="text-sm py-1 w-fit mt-4">
 									{generateTimestamp(msg.timestamp)}
@@ -136,9 +190,11 @@ const Chat = ({ activeUser }) => {
 						return (
 							<article
 								key={msg.clientId + i}
-								className="flex flex-col shadow-lg px-5 py-3 gap-2 bg-neutral-100 max-w-[80%] rounded-tl-3xl rounded-tr-3xl rounded-br-3xl"
+								className="flex flex-col shadow-lg px-5 py-3 gap-2 bg-neutral-100 min-w-[150px] max-w-[40rem] rounded-tl-3xl rounded-tr-3xl rounded-br-3xl"
 							>
-								<h3 className="text-lg font-semibold">Username</h3>
+								<h3 className="text-lg font-semibold">
+									{getUserName(msg.clientId)}
+								</h3>
 								<p>{msg.data}</p>
 								<p className="text-sm py-1 w-fit mt-4">
 									{generateTimestamp(msg.timestamp)}
@@ -149,7 +205,7 @@ const Chat = ({ activeUser }) => {
 				})}
 			</section>
 			{/* Footer */}
-			<footer className="bg-blue-400 w-full mt-auto px-4 py-3">
+			<footer className="bg-blue-400 w-full mt-auto px-4 py-3 fixed bottom-0 left-0">
 				<form className="flex gap-2" onSubmit={handleSendMessage}>
 					<input
 						type="text"

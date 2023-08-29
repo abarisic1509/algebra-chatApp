@@ -25,12 +25,7 @@ function App() {
 			<main className="bg-neutral-50 flex flex-auto relative z-10">
 				<Routes>
 					<Route path="/" element={<Login setActiveUser={setActiveUser} />} />
-					<Route
-						path="/lobby"
-						element={
-							<Lobby activeUser={activeUser} setActiveUser={setActiveUser} />
-						}
-					/>
+					<Route path="/lobby" element={<Lobby />} />
 					<Route
 						path="/chat/:id"
 						element={
