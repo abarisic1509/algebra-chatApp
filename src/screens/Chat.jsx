@@ -158,7 +158,7 @@ const Chat = ({ activeUser }) => {
 
 					{/* Active users */}
 					{activeMembers.length > 0 && (
-						<p className="text-xl font-medium">
+						<p className="text-sm font-medium">
 							{activeMembers.length}{" "}
 							{activeMembers.length === 1 ? "user" : "users"} online
 						</p>

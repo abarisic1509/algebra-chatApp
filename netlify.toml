@@ -1,0 +1,14 @@
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/lobby/"
+  to = "/index.html"
+  status = 200
+
+  [[redirects]]
+  from = "/chat/*"
+  to = "/index.html"
+  status = 200
