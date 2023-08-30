@@ -192,7 +192,10 @@ const Chat = ({ activeUser }) => {
 								key={msg.clientId + i}
 								className="flex flex-col shadow-lg px-5 py-3 gap-2 bg-neutral-100 min-w-[150px] max-w-[40rem] rounded-tl-3xl rounded-tr-3xl rounded-br-3xl"
 							>
-								<h3 className="text-lg font-semibold">
+								<h3
+									className="text-lg font-semibold"
+									style={{ color: getUserColor(msg.clientId) }}
+								>
 									{getUserName(msg.clientId)}
 								</h3>
 								<p>{msg.data}</p>
