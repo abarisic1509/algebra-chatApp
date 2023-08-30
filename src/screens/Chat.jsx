@@ -114,12 +114,20 @@ const Chat = ({ activeUser }) => {
 	function getUserColor(userId) {
 		const userData = activeMembers.find((memb) => memb.id === userId);
 
-		return userData.clientData.color;
+		if (userData) {
+			return userData.clientData.color;
+		} else {
+			return "";
+		}
 	}
 	function getUserName(userId) {
 		const userData = activeMembers.find((memb) => memb.id === userId);
 
-		return userData?.clientData?.name;
+		if (userData) {
+			return userData.clientData.name;
+		} else {
+			return "";
+		}
 	}
 
 	function generateTimestamp(timestamp) {
