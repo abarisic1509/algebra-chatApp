@@ -209,23 +209,25 @@ const Chat = ({ activeUser }) => {
 			</section>
 			{/* Footer */}
 			<footer className="bg-blue-400 w-full mt-auto px-4 py-3 fixed bottom-0 left-0">
-				<form className="flex gap-2" onSubmit={handleSendMessage}>
-					<input
-						type="text"
-						name="message"
-						id="message"
-						value={newMessage}
-						onChange={handleInputChange}
-						className="w-full bg-neutral-50 border border-solid border-blue-300 rounded-2xl text-neutral-800 outline-blue-600 p-3"
-					/>
+				<Container className="w-full">
+					<form className="w-full flex gap-2" onSubmit={handleSendMessage}>
+						<input
+							type="text"
+							name="message"
+							id="message"
+							value={newMessage}
+							onChange={handleInputChange}
+							className="w-full bg-neutral-50 border border-solid border-blue-300 rounded-2xl text-neutral-800 outline-blue-600 p-3"
+						/>
 
-					<button
-						type="submit"
-						className="bg-orange-600 min-h-full px-8 text-neutral-50 rounded-lg hover:bg-orange-700"
-					>
-						SEND
-					</button>
-				</form>
+						<button
+							type="submit"
+							className="bg-orange-600 min-h-full px-8 text-neutral-50 rounded-lg hover:bg-orange-700"
+						>
+							SEND
+						</button>
+					</form>
+				</Container>
 			</footer>
 		</div>
 	);
