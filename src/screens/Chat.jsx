@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	getScaledroneChannelId,
 	getScaledroneChannelId2,
@@ -8,6 +8,8 @@ import { Container } from "../components";
 
 const Chat = ({ activeUser }) => {
 	const params = useParams();
+	const chatContainerRef = useRef(null);
+
 	const [activeMembers, setActiveMembers] = useState([]);
 	const [messages, setMessages] = useState([]);
 	const [newMessage, setNewMessage] = useState("");
@@ -15,8 +17,8 @@ const Chat = ({ activeUser }) => {
 	const channelId =
 		params.id === "test" ? getScaledroneChannelId() : getScaledroneChannelId2();
 
+	//initializing scaledrone
 	useEffect(() => {
-		//initializing scaledrone
 		// eslint-disable-next-line no-undef
 		const scaledrone = new Scaledrone(channelId, {
 			data: {
@@ -27,6 +29,7 @@ const Chat = ({ activeUser }) => {
 		setDrone(scaledrone);
 	}, []);
 
+	//after scaledrone is initialized
 	useEffect(() => {
 		if (drone) {
 			//connect to the room
@@ -91,6 +94,18 @@ const Chat = ({ activeUser }) => {
 			};
 		}
 	}, [drone]);
+
+	//chat container scrolling
+	useEffect(() => {
+		//check if chatContainer exists within DOM
+		if (chatContainerRef.current) {
+			//if it exists, scroll to bottom whenever messages are updated
+			window.scrollTo({
+				top: document.documentElement.scrollHeight,
+				scrollBehavior: "smooth",
+			});
+		}
+	}, [messages]);
 
 	function getRandomColor() {
 		return "#" + Math.floor(Math.random() * 0xffffff).toString(16);
@@ -166,7 +181,10 @@ const Chat = ({ activeUser }) => {
 				</Container>
 			</div>
 			{/* Chat window */}
-			<section className="flex flex-col px-4 gap-2 pt-28 pb-14">
+			<section
+				ref={chatContainerRef}
+				className="flex flex-col px-4 gap-2 pt-28 pb-20"
+			>
 				{messages.map((msg, i) => {
 					if (msg.clientId === drone.clientId) {
 						return (

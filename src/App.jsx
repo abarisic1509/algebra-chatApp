@@ -18,7 +18,7 @@ function App() {
 	}, [activeUser]);
 
 	return (
-		<div className="w-screen min-h-screen flex flex-col">
+		<div className="max-w-screen min-h-screen flex flex-col">
 			{pathname !== "/" && (
 				<Header activeUser={activeUser} setActiveUser={setActiveUser} />
 			)}
