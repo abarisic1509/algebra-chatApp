@@ -165,6 +165,7 @@ const Chat = ({ activeUser }) => {
         },
       });
       setNewMessage("");
+      setReplyTo(null);
     }
   };
 
