@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Container } from "../components";
 
 const Lobby = () => {
-  const rooms = ["Chatroom1", "Chatroom2"];
+  const rooms = ["Chatroom1"];
   return (
     <div
       className="w-full bg-orange-100 flex flex-col"

@@ -14,8 +14,11 @@ const Chat = ({ activeUser }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [drone, setDrone] = useState(null);
-  const channelId =
-    params.id === "test" ? getScaledroneChannelId() : getScaledroneChannelId2();
+  const channelId = getScaledroneChannelId2();
+  console.log("activeMembers", activeMembers);
+  console.log("messages", messages);
+
+  const [replyTo, setReplyTo] = useState(null);
 
   //initializing scaledrone
   useEffect(() => {
@@ -40,14 +43,14 @@ const Chat = ({ activeUser }) => {
           console.log("Connected succesfully");
         }
         //subscribe to channel
-        const room = drone.subscribe(params.id);
+        const room = drone.subscribe("observable-test");
 
         //listen for incoming messages
         room.on("open", (error) => {
           if (error) {
             return console.error("Error opening room:", error);
           } else {
-            console.log("Connected succesfully to test room");
+            console.log("Connected succesfully to room");
           }
         });
 
@@ -75,6 +78,7 @@ const Chat = ({ activeUser }) => {
         });
 
         room.on("history_message", (message) => {
+          console.log("message", message);
           if (messages.some((m) => m.id === message.id)) {
             return;
           }
@@ -83,6 +87,7 @@ const Chat = ({ activeUser }) => {
         });
 
         room.on("message", (message) => {
+          console.log("message", message);
           // Received message from room
           setMessages((prev) => [...prev, message]);
         });
@@ -147,8 +152,17 @@ const Chat = ({ activeUser }) => {
     if (newMessage.trim() !== "") {
       // Send the message to Scaledrone
       drone.publish({
-        room: params.id,
-        message: newMessage,
+        room: "observable-test",
+        message: {
+          text: newMessage,
+          replyTo: replyTo
+            ? {
+                clientId: replyTo.clientId,
+                text: replyTo.data,
+                name: getUserName(replyTo.clientId),
+              }
+            : null,
+        },
       });
       setNewMessage("");
     }
@@ -193,15 +207,41 @@ const Chat = ({ activeUser }) => {
             return (
               <article
                 key={drone.clientId + i}
-                className="flex flex-col px-5 py-3 gap-2 shadow-lg items-end text-right bg-neutral-100 ml-auto min-w-[150px] max-w-[40rem] rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl"
+                onClick={() => setReplyTo(msg)}
+                className="group relative flex flex-col px-5 py-3 gap-2 shadow-lg items-end text-right bg-neutral-100 ml-auto min-w-[150px] max-w-[40rem] rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl pl-16"
               >
+                {/* Reply preview inside each message when clicked */}
+                <div className="absolute top-2 left-2 hidden group-hover:block">
+                  <button
+                    className="text-blue-500 text-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setReplyTo(msg);
+                    }}
+                  >
+                    Reply
+                  </button>
+                </div>
+
+                {/* ReplyTo Preview */}
+                {msg.data?.replyTo && (
+                  <div className="self-start border-l-4 border-blue-400 pl-3 py-1 bg-blue-50 rounded-lg text-sm text-left w-full">
+                    <p className="text-blue-800 font-medium">
+                      {msg.data.replyTo.name}
+                    </p>
+                    <p className="italic text-blue-700 truncate line-clamp-1 w-full">
+                      {msg.data.replyTo.text?.text}
+                    </p>
+                  </div>
+                )}
+
                 <h3
                   className="text-lg font-semibold"
                   style={{ color: getUserColor(msg.clientId) }}
                 >
                   {getUserName(msg.clientId)}
                 </h3>
-                <p>{msg.data}</p>
+                <p>{msg.data?.text}</p>
                 <p className="text-sm py-1 w-fit mt-4">
                   {generateTimestamp(msg.timestamp)}
                 </p>
@@ -211,15 +251,40 @@ const Chat = ({ activeUser }) => {
             return (
               <article
                 key={msg.clientId + i}
-                className="flex flex-col mr-auto shadow-lg px-5 py-3 gap-2 bg-neutral-100 min-w-[150px] max-w-[40rem] rounded-tl-3xl rounded-tr-3xl rounded-br-3xl"
+                onClick={() => setReplyTo(msg)}
+                className="group relative flex flex-col mr-auto shadow-lg px-5 py-3 gap-2 bg-neutral-100 min-w-[150px] max-w-[40rem] rounded-tl-3xl rounded-tr-3xl rounded-br-3xl pr-16"
               >
+                {/* Reply preview inside each message when clicked */}
+                <div className="absolute top-2 right-2 hidden group-hover:block">
+                  <button
+                    className="text-blue-500 text-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setReplyTo(msg);
+                    }}
+                  >
+                    Reply
+                  </button>
+                </div>
+
+                {/* ReplyTo Preview */}
+                {msg.data?.replyTo && (
+                  <div className="self-start border-l-4 border-blue-400 pl-3 py-1 bg-blue-50 rounded-lg text-sm text-left w-full">
+                    <p className="text-blue-800 font-medium">
+                      {msg.data.replyTo.name}
+                    </p>
+                    <p className="italic text-blue-700 truncate">
+                      {msg.data.replyTo.text?.text}
+                    </p>
+                  </div>
+                )}
                 <h3
                   className="text-lg font-semibold"
                   style={{ color: getUserColor(msg.clientId) }}
                 >
                   {getUserName(msg.clientId)}
                 </h3>
-                <p>{msg.data}</p>
+                <p>{msg.data?.text}</p>
                 <p className="text-sm py-1 w-fit mt-4">
                   {generateTimestamp(msg.timestamp)}
                 </p>
@@ -231,6 +296,21 @@ const Chat = ({ activeUser }) => {
       {/* Footer */}
       <footer className="bg-blue-400 w-full mt-auto px-4 py-3 fixed bottom-0 left-0">
         <Container className="w-full">
+          {replyTo && (
+            <div className="bg-white p-2 mb-2 rounded-lg border-l-4 border-blue-500 relative">
+              <p className="text-sm font-semibold text-blue-700">
+                Replying to: {getUserName(replyTo.clientId)}
+              </p>
+              <p className="text-sm italic">{replyTo.data?.text}</p>
+              <button
+                className="absolute top-1 right-2 text-red-500"
+                onClick={() => setReplyTo(null)}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           <form className="w-full flex gap-2" onSubmit={handleSendMessage}>
             <input
               type="text"
